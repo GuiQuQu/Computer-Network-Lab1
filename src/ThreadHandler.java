@@ -11,6 +11,9 @@ import java.util.Map;
 /**
  * @Author: Wang keLong
  * @DateTime: 12:12 2020/10/29
+ * http://today.hit.edu.cn/article/2020/10/23/79797
+ * jwts.hit.edu.cn
+ * today.hit.edu.cn
  */
 public class ThreadHandler implements Runnable {
     private Socket clientSocket;
@@ -83,10 +86,10 @@ public class ThreadHandler implements Runnable {
             if (method.equalsIgnoreCase("Connect")) {
                 OutToClient.write("HTTP/1.1 403 Forbidden\r\n\r\n".getBytes());
                 OutToClient.flush();
-                System.out.println("Jump Connect");
+                //System.out.println("Jump Connect");
                 return;
             }
-            System.out.println("解析结果:\nmethod:" + method + "\nhost:" + host + "\nport:" + port + "\nurl:" + url);
+            //System.out.println("解析结果:\nmethod:" + method + "\nhost:" + host + "\nport:" + port + "\nurl:" + url);
             //网站过滤+用户过滤+网站引导
             Wall wall = new Wall();
             if (wall.isForbiddenHost(clientSocket.getLocalAddress().getHostAddress())) {
@@ -109,13 +112,14 @@ public class ThreadHandler implements Runnable {
                 BufferedReader tempInput = new BufferedReader(new InputStreamReader(new FileInputStream(cache)));
                 String fileLine = "";
                 while ((fileLine = tempInput.readLine()) != null) {
-                    if (fileLine == "") break;
+                    if (fileLine.equals("")) break;
                     if (fileLine.contains("Last-Modified")) {
                         String[] strings = fileLine.split(" ");
-                        lastModified = strings[1];
+                        lastModified = fileLine.substring(strings[0].length() + 1, fileLine.length());
+                        break;
                     }
                 }
-                if (!lastModified.equals("")) {
+                if (!lastModified.equals("") && !request.toString().contains("If-Modified-Since: ")) {
                     request.append("If-Modified-Since: " + lastModified + "\r\n");
                 }
                 //关闭文件流
@@ -143,8 +147,7 @@ public class ThreadHandler implements Runnable {
             ServerInProxy = new BufferedInputStream(remoteSocket.getInputStream());
             OutToServer = new BufferedOutputStream(remoteSocket.getOutputStream());
             //发送请求报文
-            System.out.println("送向服务器请求报文:");
-            System.out.println(request);
+            //System.out.println("送向服务器请求报文:\n"+request);
             OutToServer.write(request.toString().getBytes());
             OutToServer.flush();
             //转发数据
@@ -152,7 +155,8 @@ public class ThreadHandler implements Runnable {
             fileOutput = new FileOutputStream(cache);
             len = ServerInProxy.read(buffer);
             String firBuffer = new String(buffer, 0, len);
-            System.out.println("服务器返回数据:\n" + firBuffer);
+            System.out.println(firBuffer.substring(0,firBuffer.indexOf("\r\n")));
+            //System.out.println("服务器返回数据:\n" + firBuffer);
             if (firBuffer.contains("304")) {  //可以使用缓存
                 len = fileInput.read(buffer);
                 while (len != -1) {
@@ -160,6 +164,7 @@ public class ThreadHandler implements Runnable {
                     len = fileInput.read(buffer);
                 }
                 OutToClient.flush();
+                //System.out.println("304 使用缓存!!，读取的文件是:" + cache.getName() + "文件大小为:" + cache.length());
             } else {  //不可以使用缓存
                 while (len != -1) {
                     OutToClient.write(buffer);
