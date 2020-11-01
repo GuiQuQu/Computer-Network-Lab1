@@ -16,8 +16,10 @@ public class Wall {
         //this.urls.add("http://jwts.hit.edu.cn/");
         //this.hosts.add("192.168.0.1");
         //this.hosts.add("127.0.0.1");
-        redirectHosts.put("jwts.hit.edu.cn", "today.hit.edu.cn");
-        redirectUrls.put("http://jwts.hit.edu.cn/", "http://today.hit.edu.cn/");
+        //redirectHosts.put("jwts.hit.edu.cn", "today.hit.edu.cn");
+        //redirectUrls.put("http://jwts.hit.edu.cn/", "http://today.hit.edu.cn/");
+        redirectHosts.put("jwts.hit.edu.cn", "www.hit.edu.cn");
+        redirectUrls.put("http://jwts.hit.edu.cn/", "http://www.hit.edu.cn/");
     }
 
     public boolean isForbiddenUrl(String url) {
@@ -36,6 +38,14 @@ public class Wall {
             strings[0] = redirectHosts.get(host);
             strings[1] = redirectUrls.get(url);
             return strings;
+        } else {
+            return null;
+        }
+    }
+
+    public String isFishHost(String host) {
+        if (redirectHosts.containsKey(host)) {
+            return redirectHosts.get(host);
         } else {
             return null;
         }

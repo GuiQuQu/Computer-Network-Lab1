@@ -138,8 +138,15 @@ public class ThreadHandler implements Runnable {
                 int end = start + host.length();
                 request.replace(start, end, temp[0]);
                 host = temp[0];
-                url = temp[1];
 
+            } else if (wall.isFishHost(host) != null) {
+                //替换url中的主机名和host中的主机名
+                String fishHost = wall.isFishHost(host);
+                request.replace(request.indexOf(host), request.indexOf(host) + host.length(), fishHost);
+                int start = request.indexOf(host, request.indexOf("Host:"));
+                int end = start + host.length();
+                request.replace(start, end, fishHost);
+                host = fishHost;
             }
             System.out.println("读取请求消息:\n" + request);
             //获得和服务器的连接
@@ -155,7 +162,7 @@ public class ThreadHandler implements Runnable {
             fileOutput = new FileOutputStream(cache);
             len = ServerInProxy.read(buffer);
             String firBuffer = new String(buffer, 0, len);
-            System.out.println(firBuffer.substring(0,firBuffer.indexOf("\r\n")));
+            System.out.println(firBuffer.substring(0, firBuffer.indexOf("\r\n")));
             //System.out.println("服务器返回数据:\n" + firBuffer);
             if (firBuffer.contains("304")) {  //可以使用缓存
                 len = fileInput.read(buffer);
